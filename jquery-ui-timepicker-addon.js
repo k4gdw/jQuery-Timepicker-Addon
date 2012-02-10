@@ -475,41 +475,11 @@ $.extend(Timepicker.prototype, {
 			
 			// Updated by Peter Medeiros:
 			// - Pass in Event and UI instance into slide function
-			this.minute_slider = $tp.find('#ui_tpicker_minute_'+ dp_id).slider({
-				orientation: "horizontal",
-				value: this.minute,
-				min: o.minuteMin,
-				max: minMax,
-				step: o.stepMinute,
-				slide: function(event, ui) {
-					tp_inst.minute_slider.slider( "option", "value", ui.value);
-					tp_inst._onTimeChange();
-				}
-			});
+			this.minute_slider = $tp.find('#ui_tpicker_minute_'+ dp_id).spinner();
 
-			this.second_slider = $tp.find('#ui_tpicker_second_'+ dp_id).slider({
-				orientation: "horizontal",
-				value: this.second,
-				min: o.secondMin,
-				max: secMax,
-				step: o.stepSecond,
-				slide: function(event, ui) {
-					tp_inst.second_slider.slider( "option", "value", ui.value);
-					tp_inst._onTimeChange();
-				}
-			});
+			this.second_slider = $tp.find('#ui_tpicker_second_'+ dp_id).spinner();
 
-			this.millisec_slider = $tp.find('#ui_tpicker_millisec_'+ dp_id).slider({
-				orientation: "horizontal",
-				value: this.millisec,
-				min: o.millisecMin,
-				max: millisecMax,
-				step: o.stepMillisec,
-				slide: function(event, ui) {
-					tp_inst.millisec_slider.slider( "option", "value", ui.value);
-					tp_inst._onTimeChange();
-				}
-			});
+			this.millisec_slider = $tp.find('#ui_tpicker_millisec_'+ dp_id).spinner();
 
 			this.timezone_select = $tp.find('#ui_tpicker_timezone_'+ dp_id).append('<select></select>').find("select");
 			$.fn.append.apply(this.timezone_select,
@@ -524,95 +494,7 @@ $.extend(Timepicker.prototype, {
 				tp_inst._onTimeChange();
 			});
 
-			// Add grid functionality
-			if (o.showHour && o.hourGrid > 0) {
-				size = 100 * hourGridSize * o.hourGrid / (hourMax - o.hourMin);
-
-				$tp.find(".ui_tpicker_hour table").css({
-					width: size + "%",
-					marginLeft: (size / (-2 * hourGridSize)) + "%",
-					borderCollapse: 'collapse'
-				}).find("td").each( function(index) {
-					$(this).click(function() {
-						var h = $(this).html();
-						if(o.ampm)	{
-							var ap = h.substring(2).toLowerCase(),
-								aph = parseInt(h.substring(0,2), 10);
-							if (ap == 'a') {
-								if (aph == 12) h = 0;
-								else h = aph;
-							} else if (aph == 12) h = 12;
-							else h = aph + 12;
-						}
-						tp_inst.hour_slider.slider("option", "value", h);
-						tp_inst._onTimeChange();
-						tp_inst._onSelectHandler();
-					}).css({
-						cursor: 'pointer',
-						width: (100 / hourGridSize) + '%',
-						textAlign: 'center',
-						overflow: 'hidden'
-					});
-				});
-			}
-
-			if (o.showMinute && o.minuteGrid > 0) {
-				size = 100 * minuteGridSize * o.minuteGrid / (minMax - o.minuteMin);
-				$tp.find(".ui_tpicker_minute table").css({
-					width: size + "%",
-					marginLeft: (size / (-2 * minuteGridSize)) + "%",
-					borderCollapse: 'collapse'
-				}).find("td").each(function(index) {
-					$(this).click(function() {
-						tp_inst.minute_slider.slider("option", "value", $(this).html());
-						tp_inst._onTimeChange();
-						tp_inst._onSelectHandler();
-					}).css({
-						cursor: 'pointer',
-						width: (100 / minuteGridSize) + '%',
-						textAlign: 'center',
-						overflow: 'hidden'
-					});
-				});
-			}
-
-			if (o.showSecond && o.secondGrid > 0) {
-				$tp.find(".ui_tpicker_second table").css({
-					width: size + "%",
-					marginLeft: (size / (-2 * secondGridSize)) + "%",
-					borderCollapse: 'collapse'
-				}).find("td").each(function(index) {
-					$(this).click(function() {
-						tp_inst.second_slider.slider("option", "value", $(this).html());
-						tp_inst._onTimeChange();
-						tp_inst._onSelectHandler();
-					}).css({
-						cursor: 'pointer',
-						width: (100 / secondGridSize) + '%',
-						textAlign: 'center',
-						overflow: 'hidden'
-					});
-				});
-			}
-
-			if (o.showMillisec && o.millisecGrid > 0) {
-				$tp.find(".ui_tpicker_millisec table").css({
-					width: size + "%",
-					marginLeft: (size / (-2 * millisecGridSize)) + "%",
-					borderCollapse: 'collapse'
-				}).find("td").each(function(index) {
-					$(this).click(function() {
-						tp_inst.millisec_slider.slider("option", "value", $(this).html());
-						tp_inst._onTimeChange();
-						tp_inst._onSelectHandler();
-					}).css({
-						cursor: 'pointer',
-						width: (100 / millisecGridSize) + '%',
-						textAlign: 'center',
-						overflow: 'hidden'
-					});
-				});
-			}
+			
 
 			var $buttonPanel = $dp.find('.ui-datepicker-buttonpane');
 			if ($buttonPanel.length) $buttonPanel.before($tp);
@@ -634,142 +516,10 @@ $.extend(Timepicker.prototype, {
 			this.minute_slider.bind('slidestop',onSelectDelegate);
 			this.second_slider.bind('slidestop',onSelectDelegate);
 			this.millisec_slider.bind('slidestop',onSelectDelegate);
-			
-			// slideAccess integration: http://trentrichardson.com/2011/11/11/jquery-ui-sliders-and-touch-accessibility/
-			if (this._defaults.addSliderAccess){
-				var sliderAccessArgs = this._defaults.sliderAccessArgs;
-				setTimeout(function(){ // fix for inline mode
-					if($tp.find('.ui-slider-access').length == 0){
-						$tp.find('.ui-slider:visible').sliderAccess(sliderAccessArgs);
-
-						// fix any grids since sliders are shorter
-						var sliderAccessWidth = $tp.find('.ui-slider-access:eq(0)').outerWidth(true);
-						if(sliderAccessWidth){
-							$tp.find('table:visible').each(function(){
-								var $g = $(this),
-									oldWidth = $g.outerWidth(),
-									oldMarginLeft = $g.css('marginLeft').toString().replace('%',''),
-									newWidth = oldWidth - sliderAccessWidth,
-									newMarginLeft = ((oldMarginLeft * newWidth)/oldWidth) + '%';
-						
-								$g.css({ width: newWidth, marginLeft: newMarginLeft });
-							});
-						}
-					}
-				},0);
-			}
-			// end slideAccess integration
-			
 		}
-	},
+	}
 
-	//########################################################################
-	// This function tries to limit the ability to go outside the
-	// min/max date range
-	//########################################################################
-	_limitMinMaxDateTime: function(dp_inst, adjustSliders){
-		var o = this._defaults,
-			dp_date = new Date(dp_inst.selectedYear, dp_inst.selectedMonth, dp_inst.selectedDay);
-
-		if(!this._defaults.showTimepicker) return; // No time so nothing to check here
-
-		if($.datepicker._get(dp_inst, 'minDateTime') !== null && $.datepicker._get(dp_inst, 'minDateTime') !== undefined && dp_date){
-			var minDateTime = $.datepicker._get(dp_inst, 'minDateTime'),
-				minDateTimeDate = new Date(minDateTime.getFullYear(), minDateTime.getMonth(), minDateTime.getDate(), 0, 0, 0, 0);
-
-			if(this.hourMinOriginal === null || this.minuteMinOriginal === null || this.secondMinOriginal === null || this.millisecMinOriginal === null){
-				this.hourMinOriginal = o.hourMin;
-				this.minuteMinOriginal = o.minuteMin;
-				this.secondMinOriginal = o.secondMin;
-				this.millisecMinOriginal = o.millisecMin;
-			}
-
-			if(dp_inst.settings.timeOnly || minDateTimeDate.getTime() == dp_date.getTime()) {
-				this._defaults.hourMin = minDateTime.getHours();
-				if (this.hour <= this._defaults.hourMin) {
-					this.hour = this._defaults.hourMin;
-					this._defaults.minuteMin = minDateTime.getMinutes();
-					if (this.minute <= this._defaults.minuteMin) {
-						this.minute = this._defaults.minuteMin;
-						this._defaults.secondMin = minDateTime.getSeconds();
-					} else if (this.second <= this._defaults.secondMin){
-						this.second = this._defaults.secondMin;
-						this._defaults.millisecMin = minDateTime.getMilliseconds();
-					} else {
-						if(this.millisec < this._defaults.millisecMin)
-							this.millisec = this._defaults.millisecMin;
-						this._defaults.millisecMin = this.millisecMinOriginal;
-					}
-				} else {
-					this._defaults.minuteMin = this.minuteMinOriginal;
-					this._defaults.secondMin = this.secondMinOriginal;
-					this._defaults.millisecMin = this.millisecMinOriginal;
-				}
-			}else{
-				this._defaults.hourMin = this.hourMinOriginal;
-				this._defaults.minuteMin = this.minuteMinOriginal;
-				this._defaults.secondMin = this.secondMinOriginal;
-				this._defaults.millisecMin = this.millisecMinOriginal;
-			}
-		}
-
-		if($.datepicker._get(dp_inst, 'maxDateTime') !== null && $.datepicker._get(dp_inst, 'maxDateTime') !== undefined && dp_date){
-			var maxDateTime = $.datepicker._get(dp_inst, 'maxDateTime'),
-				maxDateTimeDate = new Date(maxDateTime.getFullYear(), maxDateTime.getMonth(), maxDateTime.getDate(), 0, 0, 0, 0);
-
-			if(this.hourMaxOriginal === null || this.minuteMaxOriginal === null || this.secondMaxOriginal === null){
-				this.hourMaxOriginal = o.hourMax;
-				this.minuteMaxOriginal = o.minuteMax;
-				this.secondMaxOriginal = o.secondMax;
-				this.millisecMaxOriginal = o.millisecMax;
-			}
-
-			if(dp_inst.settings.timeOnly || maxDateTimeDate.getTime() == dp_date.getTime()){
-				this._defaults.hourMax = maxDateTime.getHours();
-				if (this.hour >= this._defaults.hourMax) {
-					this.hour = this._defaults.hourMax;
-					this._defaults.minuteMax = maxDateTime.getMinutes();
-					if (this.minute >= this._defaults.minuteMax) {
-						this.minute = this._defaults.minuteMax;
-						this._defaults.secondMax = maxDateTime.getSeconds();
-					} else if (this.second >= this._defaults.secondMax) {
-						this.second = this._defaults.secondMax;
-						this._defaults.millisecMax = maxDateTime.getMilliseconds();
-					} else {
-						if(this.millisec > this._defaults.millisecMax) this.millisec = this._defaults.millisecMax;
-						this._defaults.millisecMax = this.millisecMaxOriginal;
-					}
-				} else {
-					this._defaults.minuteMax = this.minuteMaxOriginal;
-					this._defaults.secondMax = this.secondMaxOriginal;
-					this._defaults.millisecMax = this.millisecMaxOriginal;
-				}
-			}else{
-				this._defaults.hourMax = this.hourMaxOriginal;
-				this._defaults.minuteMax = this.minuteMaxOriginal;
-				this._defaults.secondMax = this.secondMaxOriginal;
-				this._defaults.millisecMax = this.millisecMaxOriginal;
-			}
-		}
-
-		if(adjustSliders !== undefined && adjustSliders === true){
-			var hourMax = parseInt((this._defaults.hourMax - ((this._defaults.hourMax - this._defaults.hourMin) % this._defaults.stepHour)) ,10),
-                minMax  = parseInt((this._defaults.minuteMax - ((this._defaults.minuteMax - this._defaults.minuteMin) % this._defaults.stepMinute)) ,10),
-                secMax  = parseInt((this._defaults.secondMax - ((this._defaults.secondMax - this._defaults.secondMin) % this._defaults.stepSecond)) ,10),
-				millisecMax  = parseInt((this._defaults.millisecMax - ((this._defaults.millisecMax - this._defaults.millisecMin) % this._defaults.stepMillisec)) ,10);
-
-			if(this.hour_slider)
-				this.hour_slider.slider("option", { min: this._defaults.hourMin, max: hourMax }).slider('value', this.hour);
-			if(this.minute_slider)
-				this.minute_slider.slider("option", { min: this._defaults.minuteMin, max: minMax }).slider('value', this.minute);
-			if(this.second_slider)
-				this.second_slider.slider("option", { min: this._defaults.secondMin, max: secMax }).slider('value', this.second);
-			if(this.millisec_slider)
-				this.millisec_slider.slider("option", { min: this._defaults.millisecMin, max: millisecMax }).slider('value', this.millisec);
-		}
-
-	},
-
+	
 	
 	//########################################################################
 	// when a slider moves, set the internal time...
